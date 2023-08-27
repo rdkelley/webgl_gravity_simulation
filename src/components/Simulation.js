@@ -30,10 +30,10 @@ export default class Simulation {
 
   initCamera() {
     const _camera = new THREE.PerspectiveCamera(
-      45,
+      35,
       SIM_SIZES.width / SIM_SIZES.height,
-      1,
-      1000
+      0.1,
+      100
     );
 
     _camera.position.set(0.25, -0.25, 1);
