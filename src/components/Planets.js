@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 
+const GRAV_CONSTANT = 6.6743 * Math.pow(10, -11);
+
 /**
  * Planets simulates n-body gravity by doing the calculation on
  * the CPU. This was treated as warm up to doing the calc in shaders.
@@ -8,6 +10,7 @@ export default class Planets {
   constructor(_scene) {
     this.n = 2;
 
+    this.positions = new Float32Array(this.n * 3);
     this.setAttributes();
 
     this.setGeometry();
@@ -23,6 +26,58 @@ export default class Planets {
     _scene.add(axesHelper);
 
     this.setInitPositions();
+
+    // const a = new THREE.Vector3(0, 0, 0);
+    // const b = new THREE.Vector3(1, 0, 0);
+    // console.log(a.distanceTo(b));
+  }
+
+  updatePositions(elapsedTime) {
+    /**
+     * Calculate new positions based on gravity
+     */
+    const n = this.n;
+    const masses = 25000;
+
+    for (let i = 0; i < n; i++) {
+      let total_force = new THREE.Vector3(0, 0, 0);
+
+      // Represent current body position as vec3
+      const position = new THREE.Vector3(
+        this.positions[i * 3],
+        this.positions[i * 3 + 1],
+        this.positions[i * 3 + 2]
+      );
+
+      // Loop over all other bodies
+      for (let j = 0; j < n; j++) {
+        if (i === j) continue;
+
+        // Represent foriegn body position as vec3
+        const f_body_position = new THREE.Vector3(
+          this.positions[j * 3],
+          this.positions[j * 3 + 1],
+          this.positions[j * 3 + 2]
+        );
+
+        // Calculate distance between points
+        const distance = position.distanceTo(f_body_position);
+
+        // Subtract foriegn body vec from position and normalize to get unit vec
+        const unit_vec = position.add(f_body_position.negate()).normalize();
+
+        // Calc acceleration due to gravity for this body
+        const acc_due_to_body =
+          (GRAV_CONSTANT * masses * masses) / (distance * distance);
+
+        // Force vector for this foreign body
+        const force_vec = unit_vec.multiplyScalar(acc_due_to_body);
+
+        total_force = total_force.add(force_vec);
+
+        console.log(total_force);
+      }
+    }
   }
 
   setInitPositions() {
@@ -40,8 +95,6 @@ export default class Planets {
   setAttributes() {
     const n = this.n;
 
-    // Positions
-    this.positions = new Float32Array(n * 3);
     // Populate positions
     for (let i = 0; i < n * 3; i++) {
       this.positions[i] = Math.random() * 7;
@@ -87,6 +140,6 @@ export default class Planets {
   }
 
   updateOnTick(elapsedTime) {
-    this.elapsedTime = elapsedTime;
+    this.updatePositions(elapsedTime);
   }
 }
