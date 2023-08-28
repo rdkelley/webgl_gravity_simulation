@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 
 const GRAV_CONSTANT = 6.6743 * Math.pow(10, -11);
+const EARTH_MASS = 5.97219 * Math.pow(10, 24);
+const MOON_MASS = 7.34767309 * Math.pow(10, 22);
+const EARTH_RADIUS = 6378;
 
 /**
  * Planets simulates n-body gravity by doing the calculation on
@@ -8,10 +11,17 @@ const GRAV_CONSTANT = 6.6743 * Math.pow(10, -11);
  */
 export default class Planets {
   constructor(_scene) {
-    this.n = 2;
+    this.n = 3;
 
-    this.positions = new Float32Array(this.n * 3);
-    this.velocities = new Float32Array(this.n * 3);
+    const position_arr = [0, 0, 0, 384400, 0, 0, 100000, 50000, 0];
+    this.positions = new Float32Array(position_arr);
+    // this.positions = new Float32Array(this.n * 3);
+
+    const velocity_arr = [0, 250, 0, 15000, 15000, 0, 5000, 5000, 0];
+    this.velocities = new Float32Array(velocity_arr);
+    // this.velocities = new Float32Array(this.n * 3);
+
+    this.mass_arr = new Float32Array([EARTH_MASS, MOON_MASS, MOON_MASS]);
 
     this.setAttributes();
 
@@ -24,7 +34,7 @@ export default class Planets {
       _scene.add(mesh);
     });
 
-    const axesHelper = new THREE.AxesHelper(3);
+    const axesHelper = new THREE.AxesHelper(200000);
     _scene.add(axesHelper);
 
     this.setInitPositions();
@@ -35,7 +45,6 @@ export default class Planets {
      * Calculate new positions based on gravity
      */
     const n = this.n;
-    const masses = 1000;
 
     const delta_time = elapsedTime - this.elapsedTime;
     this.elapsedTime = elapsedTime;
@@ -61,24 +70,27 @@ export default class Planets {
           this.positions[j * 3 + 2]
         );
 
+        if (position.distanceTo(f_body_position) < EARTH_RADIUS) {
+          continue;
+        }
+
         // Calculate distance between points
         const distance = position.distanceTo(f_body_position);
 
-        // Subtract foriegn body vec from position and normalize to get unit vec
-        const unit_vec = position.add(f_body_position.negate()).normalize();
-
-        // Calc acceleration due to gravity for this body
-        const acc_due_to_body =
-          (GRAV_CONSTANT * masses * masses) / (distance * distance);
+        // Subtract foriegn body vec fromposition.negate() position and normalize to get unit vec
+        const neg_position = position.clone().negate();
+        const unit_vec = f_body_position.clone().add(neg_position).normalize();
 
         // Force vector for this foreign body
-        const force_vec = unit_vec.multiplyScalar(acc_due_to_body);
+        const force_vec = unit_vec.multiplyScalar(
+          (GRAV_CONSTANT * (this.mass_arr[i] * this.mass_arr[j])) / (distance * distance)
+        );
 
         total_force = total_force.add(force_vec);
       }
 
-      const acc = total_force.divideScalar(masses);
-      const delta_velocity = acc.multiplyScalar(delta_time);
+      const acc = total_force.clone().divideScalar(this.mass_arr[i]);
+      const delta_velocity = acc.clone().multiplyScalar(delta_time);
 
       const init_velocity = new THREE.Vector3(
         this.velocities[i * 3],
@@ -86,13 +98,29 @@ export default class Planets {
         this.velocities[i * 3 + 2]
       );
 
-      const new_velocity = init_velocity.add(delta_velocity);
+      if (i === 1) {
+        console.log('init_velocity', init_velocity);
+        console.log('delta_velocity', delta_velocity);
+      }
 
+      const new_velocity = init_velocity.clone().add(delta_velocity);
+
+      if (i === 1) {
+        console.log('new_velocity', new_velocity);
+      }
+
+      // s = s0 + v_0t + .5at^2
       const delta_disp = init_velocity
+        .clone()
         .multiplyScalar(delta_time)
-        .add(acc.multiplyScalar(0.5).multiplyScalar(delta_time * delta_time));
+        .add(
+          acc
+            .clone()
+            .multiplyScalar(0.5)
+            .multiplyScalar(delta_time * delta_time)
+        );
 
-      const new_position = position.add(delta_disp);
+      const new_position = position.clone().add(delta_disp);
 
       this.meshes[i].position.x = new_position.x;
       this.meshes[i].position.y = new_position.y;
@@ -107,6 +135,11 @@ export default class Planets {
       this.velocities[i * 3] = new_velocity.x;
       this.velocities[i * 3 + 1] = new_velocity.y;
       this.velocities[i * 3 + 2] = new_velocity.z;
+
+      if (i === 1) {
+        console.log('this.velocities', this.velocities);
+        console.log('---------------');
+      }
     }
   }
 
@@ -126,18 +159,18 @@ export default class Planets {
     const n = this.n;
 
     // Populate positions
-    for (let i = 0; i < n * 3; i++) {
-      this.positions[i] = Math.random() * 7;
-    }
+    // for (let i = 0; i < n * 3; i++) {
+    //   this.positions[i] = Math.random() * 7;
+    // }
   }
 
   setGeometry() {
     const n = this.n;
     const geometries = [];
 
-    const radius = 0.25;
-    const widthSegments = 32;
-    const heightSegments = 32;
+    const radius = EARTH_RADIUS;
+    const widthSegments = 16;
+    const heightSegments = 16;
 
     for (let i = 0; i < n; i++) {
       geometries.push(
@@ -170,6 +203,6 @@ export default class Planets {
   }
 
   updateOnTick(elapsedTime) {
-    // this.updatePositions(elapsedTime);
+    this.updatePositions(elapsedTime);
   }
 }

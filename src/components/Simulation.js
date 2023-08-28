@@ -19,12 +19,18 @@ export default class Simulation {
     this.controls = this.initControls(this.camera);
     this.time = new THREE.Clock();
     this.components = [];
+    this.debug = new dat.GUI();
 
     this.renderer = this.render();
 
     this.buildWorld();
 
     this.tick();
+
+    this.debug.add(this.camera.position, 'x', 0, 1000000, 10000);
+    this.debug.add(this.camera.position, 'y', 0, 1000000, 10000);
+    this.debug.add(this.camera.position, 'z', 0, 1000000, 10000);
+    this.debug.add(this.camera, 'fov', -0, 100, 1);
   }
 
   get elapsedTime() {
@@ -40,11 +46,11 @@ export default class Simulation {
     const _camera = new THREE.PerspectiveCamera(
       35,
       SIM_SIZES.width / SIM_SIZES.height,
-      0.1,
-      100
+      400000,
+      1500000
     );
 
-    _camera.position.set(20,10,20);
+    _camera.position.set(550000, 400000, 720000);
     this.scene.add(_camera);
 
     return _camera;
@@ -52,6 +58,9 @@ export default class Simulation {
 
   initControls(_camera) {
     const _controls = new OrbitControls(this.camera, this.canvas);
+    _controls.minDistance = 650000;
+    _controls.maxDistance = 1000000;
+
     _controls.enableDamping = true;
 
     return _controls;
