@@ -16,6 +16,8 @@ export default class Simulation {
     this.scene = new THREE.Scene();
     this.camera = this.initCamera();
     this.controls = this.initControls(this.camera);
+    this.time = new THREE.Clock();
+    this.components = [];
 
     this.renderer = this.render();
 
@@ -25,7 +27,7 @@ export default class Simulation {
   }
 
   buildWorld() {
-    new Stars(this.scene);
+    // this.components.push(new Stars(this.scene));
   }
 
   initCamera() {
@@ -36,7 +38,7 @@ export default class Simulation {
       100
     );
 
-    _camera.position.set(0.25, -0.25, 1);
+    _camera.position.set(1, 1.5, 3);
     this.scene.add(_camera);
 
     return _camera;
@@ -63,6 +65,12 @@ export default class Simulation {
 
   tick() {
     this.controls.update();
+
+    const elapsedTime = this.time.getElapsedTime();
+
+    this.components.forEach((component) => {
+      component.updateMaterial(elapsedTime);
+    });
 
     this.renderer.render(this.scene, this.camera);
 
