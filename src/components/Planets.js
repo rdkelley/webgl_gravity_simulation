@@ -11,6 +11,8 @@ export default class Planets {
     this.n = 2;
 
     this.positions = new Float32Array(this.n * 3);
+    this.velocities = new Float32Array(this.n * 3);
+
     this.setAttributes();
 
     this.setGeometry();
@@ -26,10 +28,6 @@ export default class Planets {
     _scene.add(axesHelper);
 
     this.setInitPositions();
-
-    // const a = new THREE.Vector3(0, 0, 0);
-    // const b = new THREE.Vector3(1, 0, 0);
-    // console.log(a.distanceTo(b));
   }
 
   updatePositions(elapsedTime) {
@@ -37,7 +35,10 @@ export default class Planets {
      * Calculate new positions based on gravity
      */
     const n = this.n;
-    const masses = 25000;
+    const masses = 1000;
+
+    const delta_time = elapsedTime - this.elapsedTime;
+    this.elapsedTime = elapsedTime;
 
     for (let i = 0; i < n; i++) {
       let total_force = new THREE.Vector3(0, 0, 0);
@@ -74,9 +75,38 @@ export default class Planets {
         const force_vec = unit_vec.multiplyScalar(acc_due_to_body);
 
         total_force = total_force.add(force_vec);
-
-        console.log(total_force);
       }
+
+      const acc = total_force.divideScalar(masses);
+      const delta_velocity = acc.multiplyScalar(delta_time);
+
+      const init_velocity = new THREE.Vector3(
+        this.velocities[i * 3],
+        this.velocities[i * 3 + 1],
+        this.velocities[i * 3 + 2]
+      );
+
+      const new_velocity = init_velocity.add(delta_velocity);
+
+      const delta_disp = init_velocity
+        .multiplyScalar(delta_time)
+        .add(acc.multiplyScalar(0.5).multiplyScalar(delta_time * delta_time));
+
+      const new_position = position.add(delta_disp);
+
+      this.meshes[i].position.x = new_position.x;
+      this.meshes[i].position.y = new_position.y;
+      this.meshes[i].position.z = new_position.z;
+
+      // Update position
+      this.positions[i * 3] = new_position.x;
+      this.positions[i * 3 + 1] = new_position.y;
+      this.positions[i * 3 + 2] = new_position.z;
+
+      // Update velocity
+      this.velocities[i * 3] = new_velocity.x;
+      this.velocities[i * 3 + 1] = new_velocity.y;
+      this.velocities[i * 3 + 2] = new_velocity.z;
     }
   }
 
@@ -140,6 +170,6 @@ export default class Planets {
   }
 
   updateOnTick(elapsedTime) {
-    this.updatePositions(elapsedTime);
+    // this.updatePositions(elapsedTime);
   }
 }
