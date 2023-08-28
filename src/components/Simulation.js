@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import * as dat from 'dat.gui';
 
 import Stars from './Stars';
+import Planets from './Planets';
 import '../styles/reset.css';
 
 const SIM_SIZES = {
@@ -26,8 +27,13 @@ export default class Simulation {
     this.tick();
   }
 
+  get elapsedTime() {
+    return this.time.getElapsedTime();
+  }
+
   buildWorld() {
     // this.components.push(new Stars(this.scene));
+    this.components.push(new Planets(this.scene, this.elapsedTime));
   }
 
   initCamera() {
@@ -38,7 +44,7 @@ export default class Simulation {
       100
     );
 
-    _camera.position.set(1, 1.5, 3);
+    _camera.position.set(20,10,20);
     this.scene.add(_camera);
 
     return _camera;
@@ -66,10 +72,8 @@ export default class Simulation {
   tick() {
     this.controls.update();
 
-    const elapsedTime = this.time.getElapsedTime();
-
     this.components.forEach((component) => {
-      component.updateMaterial(elapsedTime);
+      component.updateOnTick(this.elapsedTime);
     });
 
     this.renderer.render(this.scene, this.camera);

@@ -17,7 +17,6 @@ export default class Stars {
 
     this.geometry = new THREE.BufferGeometry();
 
-    // Create Float32Array to hold x,y,z coords
     this.positions = new Float32Array(n * 3);
 
     // Populate positions
