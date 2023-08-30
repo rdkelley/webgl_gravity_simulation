@@ -2,41 +2,58 @@ import * as THREE from 'three';
 import VecLine from './VecLine';
 
 const GRAV_CONSTANT = 6.6743 * Math.pow(10, -20); // km
-// const EARTH_MASS = 5.97219 * Math.pow(10, 24); // kg
-const EARTH_MASS = 5.97219 * Math.pow(10, 25); // kg
+const EARTH_MASS = 5.97219 * Math.pow(10, 24); // kg
 const MOON_MASS = 7.34767309 * Math.pow(10, 22); //kg
 const EARTH_RADIUS = 6378; //km
 const EARTH_MOON_DIST = 384400; //km
 
 const SIM_RATE = 10000;
 
-/**
- * Planets simulates gravity by doing the calculation on
- * the CPU. This was treated as warm up to doing the calc in shaders.
- */
 export default class Planets {
   constructor(_scene) {
     this.n = 100;
     this.scene = _scene;
 
-    // const position_arr = [0, 0, 0, EARTH_MOON_DIST, 0, 0, 100000, 50000, 0];
+    // Create arrays for data storage; * 3 for any vec3 data
     this.positions = new Float32Array(this.n * 3);
     this.velocities = new Float32Array(this.n * 3);
-
     this.masses = new Float32Array(this.n);
+
+    // Set 0 index to contain earth-like params
     this.masses[0] = EARTH_MASS;
 
     this.radii = new Float32Array(this.n);
     this.radii[0] = EARTH_RADIUS;
-    // this.positions = new Float32Array(this.n * 3);
 
-    for (let i = 1; i < this.n; i++) {
-      const mass = Math.random() * 2 * MOON_MASS;
-      console.log(mass);
-      this.masses[i] = mass;
-      this.radii[i] = mass / (4.2266 * Math.pow(10, 19));
+    this.setInitialValues();
+
+    this.setGeometry();
+    this.setMaterial();
+    this.setMesh();
+    this.elapsedTime = 0.0;
+
+    this.meshes.forEach((mesh) => {
+      this.scene.add(mesh);
+    });
+
+    this.initPositions();
+  }
+
+  initPositions() {
+    for (let i = 0; i < this.n; i++) {
+      this.meshes[i].position.set(
+        this.positions[i * 3],
+        this.positions[i * 3 + 1],
+        this.positions[i * 3 + 2]
+      );
     }
+  }
 
+  setInitialValues() {
+    /**
+     * Populate random positions. xyz randomness modified
+     * to create disc-like shape of bodies around central body
+     */
     for (let i = 3; i < this.n * 3; i++) {
       if (i % 3 === 0) {
         this.positions[i] =
@@ -48,32 +65,25 @@ export default class Planets {
         this.positions[i] = 0;
       } else {
         this.positions[i] =
-          Math.random() *
-          2 *
-          EARTH_MOON_DIST *
-          (Math.random() < 0.5 ? -1 : 1);
+          Math.random() * 2 * EARTH_MOON_DIST * (Math.random() < 0.5 ? -1 : 1);
       }
     }
 
+    /**
+     * Populate mass & radii. Radii is simplistically
+     * based on mass (mass/radius ratio based on moon)
+     */
+    for (let i = 1; i < this.n; i++) {
+      const mass = Math.random() * 2 * MOON_MASS;
+
+      this.masses[i] = mass;
+      this.radii[i] = mass / (4.2266 * Math.pow(10, 19));
+    }
+
+    // Velocities
     for (let i = 3; i < this.n * 3; i++) {
       this.velocities[i] = Math.random() * 2;
     }
-
-    this.setAttributes();
-
-    this.setGeometry();
-    this.setMaterial();
-    this.setMesh();
-    this.elapsedTime = 0.0;
-
-    this.meshes.forEach((mesh) => {
-      this.scene.add(mesh);
-    });
-
-    const axesHelper = new THREE.AxesHelper(200000);
-    this.scene.add(axesHelper);
-
-    this.setInitPositions();
   }
 
   updatePositions(elapsedTime) {
@@ -138,12 +148,7 @@ export default class Planets {
         this.velocities[i * 3 + 2]
       );
 
-      // console.log(init_velocity);
       const new_velocity = init_velocity.clone().add(delta_velocity);
-
-      // if (i === 0) {
-      //   console.log(new_velocity);
-      // }
 
       // s = s0 + v_0t + .5at^2
       const delta_disp = init_velocity
@@ -167,33 +172,11 @@ export default class Planets {
       this.positions[i * 3 + 1] = new_position.y;
       this.positions[i * 3 + 2] = new_position.z;
 
-      // console.log(new_velocity);
       // Update velocity
       this.velocities[i * 3] = new_velocity.x;
       this.velocities[i * 3 + 1] = new_velocity.y;
       this.velocities[i * 3 + 2] = new_velocity.z;
     }
-  }
-
-  setInitPositions() {
-    const n = this.n;
-
-    for (let i = 0; i < n; i++) {
-      this.meshes[i].position.set(
-        this.positions[i * 3],
-        this.positions[i * 3 + 1],
-        this.positions[i * 3 + 2]
-      );
-    }
-  }
-
-  setAttributes() {
-    const n = this.n;
-
-    // Populate positions
-    // for (let i = 0; i < n * 3; i++) {
-    //   this.positions[i] = Math.random() * 7;
-    // }
   }
 
   setGeometry() {
@@ -231,7 +214,9 @@ export default class Planets {
     const meshes = [];
 
     this.geometries.forEach((geometry, i) => {
-      meshes.push(new THREE.Mesh(geometry, this.materials[i]));
+      const mesh = new THREE.Mesh(geometry, this.materials[i]);
+
+      meshes.push(mesh);
     });
 
     this.meshes = meshes;

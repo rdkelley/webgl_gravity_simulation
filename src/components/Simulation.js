@@ -4,7 +4,9 @@ import * as dat from 'dat.gui';
 
 import Stars from './Stars';
 import Planets from './Planets';
+import Raycaster from './Raycaster';
 import '../styles/reset.css';
+import '../styles/style.css';
 
 const SIM_SIZES = {
   width: window.innerWidth,
@@ -14,12 +16,14 @@ const SIM_SIZES = {
 export default class Simulation {
   constructor(_canvas) {
     this.canvas = _canvas;
+
     this.scene = new THREE.Scene();
+    this.time = new THREE.Clock();
+    this.debug = new dat.GUI();
+
     this.camera = this.initCamera();
     this.controls = this.initControls(this.camera);
-    this.time = new THREE.Clock();
     this.components = [];
-    this.debug = new dat.GUI();
 
     this.renderer = this.render();
 
@@ -27,18 +31,34 @@ export default class Simulation {
 
     this.tick();
 
-    this.debug.add(this.camera.position, 'x', 0, 1000000, 10000);
-    this.debug.add(this.camera.position, 'y', 0, 1000000, 10000);
-    this.debug.add(this.camera.position, 'z', 0, 1000000, 10000);
-    this.debug.add(this.camera, 'fov', -0, 100, 1);
+    this.setSceneAttributes();
+
+    console.log(new Raycaster());
   }
 
   get elapsedTime() {
     return this.time.getElapsedTime();
   }
 
+  setSceneAttributes() {
+    const axesHelper = new THREE.AxesHelper(200000);
+
+    this.scene.add(axesHelper);
+
+    const geometry = new THREE.PlaneGeometry(200000, 200000);
+    const material = new THREE.MeshBasicMaterial({
+      color: "#4267b8",
+      transparent: true,
+      opacity: 0.2,
+      side: THREE.DoubleSide,
+    });
+    const plane = new THREE.Mesh(geometry, material);
+    this.scene.add(plane);
+  }
+
   buildWorld() {
-    // this.components.push(new Stars(this.scene));
+    this.scene.background = new THREE.Color('#22262e');
+
     this.components.push(new Planets(this.scene, this.elapsedTime));
   }
 
@@ -69,6 +89,7 @@ export default class Simulation {
   render() {
     const _renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
+      antialias: true,
     });
 
     _renderer.setSize(SIM_SIZES.width, SIM_SIZES.height);
