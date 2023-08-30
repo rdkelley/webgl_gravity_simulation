@@ -47,7 +47,7 @@ export default class Simulation {
       35,
       SIM_SIZES.width / SIM_SIZES.height,
       400000,
-      1500000
+      10000000
     );
 
     _camera.position.set(550000, 400000, 720000);
@@ -58,8 +58,8 @@ export default class Simulation {
 
   initControls(_camera) {
     const _controls = new OrbitControls(this.camera, this.canvas);
-    _controls.minDistance = 650000;
-    _controls.maxDistance = 1000000;
+    _controls.minDistance = 600000;
+    _controls.maxDistance = 1500000;
 
     _controls.enableDamping = true;
 
