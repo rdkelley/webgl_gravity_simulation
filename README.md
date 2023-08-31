@@ -1,5 +1,7 @@
 # WebGL Gravity Simulation
 
+Deployed application: [https://nbody-gravity-webgl.vercel.app/](https://nbody-gravity-webgl.vercel.app/)
+
 This is a WebGL Gravity and n-body simulation built using three.js. It is very much a work-in-progress, and currently consists of:
 
 - A JavaScript application that uses the equation for universal gravitation applied to three.js objects.
