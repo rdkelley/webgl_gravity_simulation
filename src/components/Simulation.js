@@ -22,7 +22,7 @@ export default class Simulation {
     this.debug = new dat.GUI();
 
     this.camera = this.initCamera();
-    this.controls = this.initControls(this.camera);
+    this.controls = this.initControls();
     this.components = [];
 
     this.renderer = this.render();
@@ -31,38 +31,50 @@ export default class Simulation {
 
     this.tick();
 
-    this.setSceneAttributes();
-
-    console.log(new Raycaster());
+    this.setEvtHandlers();
   }
 
   get elapsedTime() {
     return this.time.getElapsedTime();
   }
 
-  setSceneAttributes() {
-    const axesHelper = new THREE.AxesHelper(200000);
+  setSceneAttributes = () => {
 
-    this.scene.add(axesHelper);
+  };
 
-    const geometry = new THREE.PlaneGeometry(200000, 200000);
-    const material = new THREE.MeshBasicMaterial({
-      color: "#4267b8",
-      transparent: true,
-      opacity: 0.2,
-      side: THREE.DoubleSide,
-    });
-    const plane = new THREE.Mesh(geometry, material);
-    this.scene.add(plane);
-  }
-
-  buildWorld() {
+  buildWorld = () => {
     this.scene.background = new THREE.Color('#22262e');
 
-    this.components.push(new Planets(this.scene, this.elapsedTime));
-  }
+    this.components.push(new Planets(this.scene, this.setCameraTarget));
 
-  initCamera() {
+    this.setSceneAttributes();
+  };
+
+  setEvtHandlers = () => {
+    const reset = document.querySelector('#reset-button');
+    const incGravity = document.querySelector('#inc-mass');
+    const decGravity = document.querySelector('#dec-mass');
+
+    reset.addEventListener('click', () => this.resetScene());
+
+    incGravity.addEventListener('click', () => {
+      this.components.forEach((c) => {
+        if (c.type === 'planets') {
+          c.incMassOfCentralObj();
+        }
+      });
+    });
+
+    decGravity.addEventListener('click', () => {
+      this.components.forEach((c) => {
+        if (c.type === 'planets') {
+          c.decMassOfCentralObj();
+        }
+      });
+    });
+  };
+
+  initCamera = () => {
     const _camera = new THREE.PerspectiveCamera(
       35,
       SIM_SIZES.width / SIM_SIZES.height,
@@ -74,19 +86,36 @@ export default class Simulation {
     this.scene.add(_camera);
 
     return _camera;
-  }
+  };
 
-  initControls(_camera) {
+  initControls = () => {
     const _controls = new OrbitControls(this.camera, this.canvas);
     _controls.minDistance = 600000;
     _controls.maxDistance = 1500000;
-
     _controls.enableDamping = true;
 
     return _controls;
-  }
+  };
 
-  render() {
+  resetClock = () => {
+    this.time = new THREE.Clock();
+  };
+
+  setCameraTarget = (target) => {
+    this.controls.target = target;
+  };
+
+  resetScene = () => {
+    while (this.scene.children.length > 0) {
+      this.scene.remove(this.scene.children[0]);
+    }
+
+    this.components = [];
+    this.resetClock();
+    this.buildWorld();
+  };
+
+  render = () => {
     const _renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
       antialias: true,
@@ -97,9 +126,9 @@ export default class Simulation {
     _renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     return _renderer;
-  }
+  };
 
-  tick() {
+  tick = () => {
     this.controls.update();
 
     this.components.forEach((component) => {
@@ -111,5 +140,5 @@ export default class Simulation {
     window.requestAnimationFrame(() => {
       this.tick();
     });
-  }
+  };
 }

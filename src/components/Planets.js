@@ -10,9 +10,10 @@ const EARTH_MOON_DIST = 384400; //km
 const SIM_RATE = 10000;
 
 export default class Planets {
-  constructor(_scene) {
-    this.n = 100;
+  constructor(_scene, setCameraTarget) {
+    this.n = 200;
     this.scene = _scene;
+    this.setCameraTarget = setCameraTarget;
 
     // Create arrays for data storage; * 3 for any vec3 data
     this.positions = new Float32Array(this.n * 3);
@@ -32,14 +33,18 @@ export default class Planets {
     this.setMesh();
     this.elapsedTime = 0.0;
 
-    this.meshes.forEach((mesh) => {
+    this.meshes.forEach((mesh, i) => {
       this.scene.add(mesh);
     });
 
     this.initPositions();
   }
 
-  initPositions() {
+  get type() {
+    return 'planets';
+  }
+
+  initPositions = () => {
     for (let i = 0; i < this.n; i++) {
       this.meshes[i].position.set(
         this.positions[i * 3],
@@ -47,9 +52,9 @@ export default class Planets {
         this.positions[i * 3 + 2]
       );
     }
-  }
+  };
 
-  setInitialValues() {
+  setInitialValues = () => {
     /**
      * Populate random positions. xyz randomness modified
      * to create disc-like shape of bodies around central body
@@ -84,9 +89,9 @@ export default class Planets {
     for (let i = 3; i < this.n * 3; i++) {
       this.velocities[i] = Math.random() * 2;
     }
-  }
+  };
 
-  updatePositions(elapsedTime) {
+  updatePositions = (elapsedTime) => {
     /**
      * Calculate new positions based on gravity
      */
@@ -105,6 +110,11 @@ export default class Planets {
         this.positions[i * 3 + 2]
       );
 
+      // Update camera if i is center mass
+      if (i === 0) {
+        this.setCameraTarget(position);
+      }
+
       // Loop over all other bodies
       for (let j = 0; j < n; j++) {
         if (i === j) continue;
@@ -120,6 +130,7 @@ export default class Planets {
           position.distanceTo(f_body_position) <=
           this.radii[i] + this.radii[j]
         ) {
+          console.log('HIT');
           continue;
         }
 
@@ -177,9 +188,9 @@ export default class Planets {
       this.velocities[i * 3 + 1] = new_velocity.y;
       this.velocities[i * 3 + 2] = new_velocity.z;
     }
-  }
+  };
 
-  setGeometry() {
+  setGeometry = () => {
     const n = this.n;
     const geometries = [];
 
@@ -197,9 +208,9 @@ export default class Planets {
     }
 
     this.geometries = geometries;
-  }
+  };
 
-  setMaterial() {
+  setMaterial = () => {
     const n = this.n;
     const materials = [];
 
@@ -208,21 +219,51 @@ export default class Planets {
     }
 
     this.materials = materials;
-  }
+  };
 
-  setMesh() {
+  incMassOfCentralObj = () => {
+    this.masses[0] = this.masses[0] * 10;
+  };
+
+  decMassOfCentralObj = () => {
+    this.masses[0] = this.masses[0] / 10;
+  };
+
+  setMesh = () => {
     const meshes = [];
 
     this.geometries.forEach((geometry, i) => {
       const mesh = new THREE.Mesh(geometry, this.materials[i]);
 
+      /**
+       * Add axes and planes to follow center object
+       */
+      if (i === 0) {
+        mesh.add(new THREE.AxesHelper(250000));
+
+        const geometry = new THREE.PlaneGeometry(500000, 500000);
+
+        const material = new THREE.MeshBasicMaterial({
+          color: '#4267b8',
+          transparent: true,
+          opacity: 0.2,
+          side: THREE.DoubleSide,
+        });
+
+        const plane_z = new THREE.Mesh(geometry, material).rotateX(1.5708);
+        const plane_x = new THREE.Mesh(geometry, material);
+
+        mesh.add(plane_z);
+        mesh.add(plane_x);
+      }
+
       meshes.push(mesh);
     });
 
     this.meshes = meshes;
-  }
+  };
 
-  updateOnTick(elapsedTime) {
+  updateOnTick = (elapsedTime) => {
     this.updatePositions(elapsedTime);
-  }
+  };
 }
