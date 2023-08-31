@@ -130,14 +130,13 @@ export default class Planets {
           position.distanceTo(f_body_position) <=
           this.radii[i] + this.radii[j]
         ) {
-          console.log('HIT');
           continue;
         }
 
         // Calculate distance between points
         const distance = position.distanceTo(f_body_position);
 
-        // Subtract foriegn body vec fromposition.negate() position and normalize to get unit vec
+        // Subtract foriegn body vec from position.negate() position and normalize to get unit vec
         const neg_position = position.clone().negate();
         const unit_vec = f_body_position.clone().add(neg_position).normalize();
 
@@ -147,10 +146,10 @@ export default class Planets {
             (distance * distance)
         );
 
-        total_force = total_force.add(force_vec);
+        total_force = total_force.clone().add(force_vec);
       }
 
-      const acc = total_force.clone().divideScalar(this.masses[i]);
+      const acc = total_force.divideScalar(this.masses[i]);
       const delta_velocity = acc.clone().multiplyScalar(delta_time);
 
       const init_velocity = new THREE.Vector3(
