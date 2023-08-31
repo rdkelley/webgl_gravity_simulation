@@ -14,18 +14,71 @@
   <body>
     <canvas class="three"></canvas>
 
+    <div class="advisory d-flex">
+      <div class="svg-container">
+        <a
+          target="_blank"
+          href="https://github.com/rdkelley/webgl_gravity_simulation"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="28"
+            height="28"
+            fill="white"
+            class="bi bi-github"
+            viewBox="0 0 16 16"
+          >
+            <path
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+            /></svg
+        ></a>
+      </div>
+      <small class="text-advisory"
+        >Note: This is a work in progress! It may display some unpredictable
+        behavior while in development. Follow this project's progress on its
+        Github repository.</small
+      >
+    </div>
+
     <div class="control-panel">
+      <h1 class="display-6 text-light">Gravity Simulator</h1>
+
       <label for="n-range" class="form-label text-light"
         >Number of bodies &#x2022; <span id="num-body"></span
       ></label>
-      <input type="range" class="form-range" min="25" max="500" step="25" id="n-range" />
-      <div class="d-flex w-100">
+
+      <input
+        type="range"
+        class="form-range"
+        min="25"
+        max="500"
+        step="25"
+        id="n-range"
+      />
+
+      <p>
+        <small class="text-light"
+          >Changing the number of bodies requires a reset of simulation.</small
+        >
+      </p>
+
+      <div>
         <button type="button" class="btn btn-primary btn-sm" id="reset-button">
           Reset Simulation
         </button>
       </div>
 
-      <hr />
+      <hr class="text-light" />
+
+      <p class="h6 text-light">Inc/Dec Mass of Center Object</p>
+
+      <p>
+        <small class="text-light"
+          >The center object exerts a force on all other objects, and all other
+          objects exert a force on it. To modify the mass of the center object,
+          use these buttons.</small
+        >
+      </p>
 
       <button class="btn btn-primary btn-sm" id="dec-mass">
         Decrease Center Mass x10

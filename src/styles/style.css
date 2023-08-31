@@ -18,9 +18,24 @@
   position: absolute;
   left: 25px;
   bottom: 25px;
-  /* width: 400px;
-  height: 200px;
-  background: #0e0f23;
-  border-radius: 5px;
-  border: 1px solid #545675; */
+  max-width: 500px;
+}
+
+.svg-container {
+  margin-right: 1rem;
+  
+}
+
+.advisory {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+}
+
+.advisory .text-advisory {
+  position: relative;
+  color: #dbdbdb;
+  max-width: 350px;
+  top: -5px;
+  font-size: 11px;
 }
