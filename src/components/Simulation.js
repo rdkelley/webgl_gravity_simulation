@@ -38,9 +38,7 @@ export default class Simulation {
     return this.time.getElapsedTime();
   }
 
-  setSceneAttributes = () => {
-
-  };
+  setSceneAttributes = () => {};
 
   buildWorld = () => {
     this.scene.background = new THREE.Color('#22262e');
@@ -50,12 +48,27 @@ export default class Simulation {
     this.setSceneAttributes();
   };
 
+  handleResize = () => {
+    SIM_SIZES.width = window.innerWidth;
+    SIM_SIZES.height = window.innerHeight;
+
+    this.camera.aspect = SIM_SIZES.width / SIM_SIZES.height;
+    this.camera.updateProjectionMatrix();
+
+    console.log(SIM_SIZES.width, SIM_SIZES.height);
+
+    this.renderer.setSize(SIM_SIZES.width, SIM_SIZES.height);
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  };
+
   setEvtHandlers = () => {
     const reset = document.querySelector('#reset-button');
     const incGravity = document.querySelector('#inc-mass');
     const decGravity = document.querySelector('#dec-mass');
 
     reset.addEventListener('click', () => this.resetScene());
+
+    window.addEventListener('resize', () => this.handleResize());
 
     incGravity.addEventListener('click', () => {
       this.components.forEach((c) => {
@@ -78,7 +91,7 @@ export default class Simulation {
     const _camera = new THREE.PerspectiveCamera(
       35,
       SIM_SIZES.width / SIM_SIZES.height,
-      400000,
+      200000,
       10000000
     );
 

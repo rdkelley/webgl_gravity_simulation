@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import VecLine from './VecLine';
 
 const GRAV_CONSTANT = 6.6743 * Math.pow(10, -20); // km
 const EARTH_MASS = 5.97219 * Math.pow(10, 24); // kg
@@ -59,19 +58,12 @@ export default class Planets {
      * Populate random positions. xyz randomness modified
      * to create disc-like shape of bodies around central body
      */
-    for (let i = 3; i < this.n * 3; i++) {
-      if (i % 3 === 0) {
-        this.positions[i] =
-          Math.random() *
-          1.5 *
-          EARTH_MOON_DIST *
-          (Math.random() < 0.5 ? -1 : 1);
-      } else if ((i - 1) % 3 === 0) {
-        this.positions[i] = 0;
-      } else {
-        this.positions[i] =
-          Math.random() * 2 * EARTH_MOON_DIST * (Math.random() < 0.5 ? -1 : 1);
-      }
+    for (let i = 3; i < this.n * 3; i += 3) {
+      this.positions[i] =
+        Math.random() * 1.5 * EARTH_MOON_DIST * (Math.random() < 0.5 ? -1 : 1);
+      this.positions[i + 1] = Math.random() * 2 * 10000;
+      this.positions[i + 2] =
+        Math.random() * 1.5 * EARTH_MOON_DIST * (Math.random() < 0.5 ? -1 : 1);
     }
 
     /**
@@ -79,15 +71,36 @@ export default class Planets {
      * based on mass (mass/radius ratio based on moon)
      */
     for (let i = 1; i < this.n; i++) {
-      const mass = Math.random() * 2 * MOON_MASS;
+      let mass = Math.random() * 1.75 * MOON_MASS;
+      let radius = mass / (4.2266 * Math.pow(10, 19));
+
+      if (Math.random() < 0.005) {
+        mass = Math.random() * 1.75 * EARTH_MASS;
+        radius = EARTH_RADIUS;
+      }
 
       this.masses[i] = mass;
-      this.radii[i] = mass / (4.2266 * Math.pow(10, 19));
+      this.radii[i] = radius;
     }
 
     // Velocities
-    for (let i = 3; i < this.n * 3; i++) {
-      this.velocities[i] = Math.random() * 2;
+    for (let i = 3; i < this.n * 3; i += 3) {
+      const position = new THREE.Vector3(
+        this.positions[i],
+        this.positions[i + 1],
+        this.positions[i + 2]
+      );
+
+      const dir = position.clone();
+      const movement_dir = dir
+        .normalize()
+        .applyAxisAngle(new THREE.Vector3(0, 1, 0), 1.5708);
+
+      const randomized_vel_vec = movement_dir.multiplyScalar(Math.random() * 3);
+
+      this.velocities[i] = randomized_vel_vec.x;
+      this.velocities[i + 1] = randomized_vel_vec.y;
+      this.velocities[i + 2] = randomized_vel_vec.z;
     }
   };
 
@@ -199,7 +212,7 @@ export default class Planets {
     for (let i = 0; i < n; i++) {
       geometries.push(
         new THREE.SphereGeometry(
-          i === 0 ? this.radii[0] : this.radii[1],
+          i === 0 ? this.radii[0] : this.radii[i],
           widthSegments,
           heightSegments
         )
@@ -213,8 +226,10 @@ export default class Planets {
     const n = this.n;
     const materials = [];
 
-    for (let i = 0; i < n; i++) {
-      materials.push(new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
+    materials[0] = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+
+    for (let i = 1; i < n; i++) {
+      materials.push(new THREE.MeshBasicMaterial({ color: '#ff3c3c' }));
     }
 
     this.materials = materials;
