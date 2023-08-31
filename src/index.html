@@ -4,17 +4,44 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>N-body Simulator</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
+      crossorigin="anonymous"
+    />
   </head>
   <body>
     <canvas class="three"></canvas>
 
     <div class="control-panel">
-      <button id="reset-button">Reset</button>
-      <button id="inc-mass">Increase Mass x10</button>
-      <button id="dec-mass">Decrease Mass x10</button>
+      <label for="n-range" class="form-label text-light"
+        >Number of bodies &#x2022; <span id="num-body"></span
+      ></label>
+      <input type="range" class="form-range" min="25" max="500" step="25" id="n-range" />
+      <div class="d-flex w-100">
+        <button type="button" class="btn btn-primary btn-sm" id="reset-button">
+          Reset Simulation
+        </button>
+      </div>
+
+      <hr />
+
+      <button class="btn btn-primary btn-sm" id="dec-mass">
+        Decrease Center Mass x10
+      </button>
+      <button class="btn btn-primary btn-sm" id="inc-mass">
+        Increase Center Mass x10
+      </button>
     </div>
 
     <div class="info info1"></div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
+      crossorigin="anonymous"
+    ></script>
+
     <script type="module" src="./index.js"></script>
   </body>
 </html>

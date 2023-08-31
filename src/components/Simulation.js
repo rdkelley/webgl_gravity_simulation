@@ -16,6 +16,7 @@ const SIM_SIZES = {
 export default class Simulation {
   constructor(_canvas) {
     this.canvas = _canvas;
+    this.n = 275;
 
     this.scene = new THREE.Scene();
     this.time = new THREE.Clock();
@@ -38,14 +39,10 @@ export default class Simulation {
     return this.time.getElapsedTime();
   }
 
-  setSceneAttributes = () => {};
-
   buildWorld = () => {
     this.scene.background = new THREE.Color('#22262e');
 
-    this.components.push(new Planets(this.scene, this.setCameraTarget));
-
-    this.setSceneAttributes();
+    this.components.push(new Planets(this.scene, this.setCameraTarget, this.n));
   };
 
   handleResize = () => {
@@ -55,18 +52,25 @@ export default class Simulation {
     this.camera.aspect = SIM_SIZES.width / SIM_SIZES.height;
     this.camera.updateProjectionMatrix();
 
-    console.log(SIM_SIZES.width, SIM_SIZES.height);
-
     this.renderer.setSize(SIM_SIZES.width, SIM_SIZES.height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   };
 
   setEvtHandlers = () => {
+    const n_body_val_element = document.querySelector('#num-body');
     const reset = document.querySelector('#reset-button');
     const incGravity = document.querySelector('#inc-mass');
     const decGravity = document.querySelector('#dec-mass');
+    const nRange = document.querySelector('#n-range');
 
     reset.addEventListener('click', () => this.resetScene());
+
+    nRange.addEventListener('mousemove', (e) => {
+      if (e.target.value !== this.n) {
+        this.n = e.target.value;
+        n_body_val_element.textContent = this.n;
+      }
+    });
 
     window.addEventListener('resize', () => this.handleResize());
 
@@ -118,14 +122,14 @@ export default class Simulation {
     this.controls.target = target;
   };
 
-  resetScene = () => {
+  resetScene = (n) => {
     while (this.scene.children.length > 0) {
       this.scene.remove(this.scene.children[0]);
     }
 
     this.components = [];
     this.resetClock();
-    this.buildWorld();
+    this.buildWorld(n);
   };
 
   render = () => {

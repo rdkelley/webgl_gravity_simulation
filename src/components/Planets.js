@@ -8,9 +8,11 @@ const EARTH_MOON_DIST = 384400; //km
 
 const SIM_RATE = 10000;
 
+const n_body_val_element = document.querySelector('#num-body');
+
 export default class Planets {
-  constructor(_scene, setCameraTarget) {
-    this.n = 200;
+  constructor(_scene, setCameraTarget, n = 275) {
+    this.n = n;
     this.scene = _scene;
     this.setCameraTarget = setCameraTarget;
 
@@ -102,6 +104,8 @@ export default class Planets {
       this.velocities[i + 1] = randomized_vel_vec.y;
       this.velocities[i + 2] = randomized_vel_vec.z;
     }
+
+    n_body_val_element.textContent = this.n;
   };
 
   updatePositions = (elapsedTime) => {
